@@ -43,10 +43,14 @@ export class NetworkInterceptor {
     let resultUrl = url;
 
     for (const varObj of Object.values(allVars)) {
-      if (varObj.isOverridden && varObj.defaultValue && varObj.value) {
+      if (varObj.isOverridden && varObj.defaultValue !== undefined && varObj.value !== undefined) {
+        const rawDefault = String(varObj.defaultValue ?? '');
+        const rawOverride = String(varObj.value ?? '');
+        if (!rawDefault || !rawOverride) continue;
+
         // Trim trailing slashes for accurate matching
-        const defaultBase = varObj.defaultValue.replace(/\/+$/, '');
-        const overrideBase = varObj.value.replace(/\/+$/, '');
+        const defaultBase = rawDefault.replace(/\/+$/, '');
+        const overrideBase = rawOverride.replace(/\/+$/, '');
 
         if (defaultBase && resultUrl.includes(defaultBase)) {
           resultUrl = resultUrl.replace(defaultBase, overrideBase);

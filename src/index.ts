@@ -207,13 +207,12 @@ export class LambaManager {
 // Global Singleton Instance
 export const lamba = new LambaManager();
 
-// Auto-initialize when included as a CDN script tag in browser
+// Auto-initialize when included as a CDN script tag with explicit data attribute
 if (typeof window !== 'undefined') {
   (window as any).lamba = lamba;
 
-  // Auto init if script loaded directly via CDN script tag
-  const isCdnScript = document.currentScript !== null || !!document.querySelector('script[src*="lamba"]');
-  if (isCdnScript) {
+  const currentScript = document.currentScript as HTMLScriptElement | null;
+  if (currentScript && (currentScript.hasAttribute('data-lamba-auto') || currentScript.hasAttribute('data-auto-init'))) {
     lamba.init();
   }
 }

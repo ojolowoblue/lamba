@@ -396,8 +396,9 @@ export class ModalUI {
     return card;
   }
 
-  private escapeHtml(str: string): string {
-    return str
+  private escapeHtml(str: any): string {
+    if (str === null || str === undefined) return '';
+    return String(str)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')

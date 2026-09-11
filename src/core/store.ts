@@ -129,13 +129,14 @@ export class EnvStore {
     return true;
   }
 
-  public mergeDefaults(env: Record<string, string>): void {
+  public mergeDefaults(env: Record<string, any>): void {
     let changed = false;
-    for (const [key, defaultValue] of Object.entries(env)) {
+    for (const [key, rawDefault] of Object.entries(env)) {
       if (!this.isAllowedKey(key)) continue;
 
+      const defaultValue = rawDefault !== null && rawDefault !== undefined ? String(rawDefault) : '';
       const isOverridden = key in this.overrides;
-      const currentValue = isOverridden ? this.overrides[key] : defaultValue;
+      const currentValue = isOverridden ? String(this.overrides[key] ?? '') : defaultValue;
       const isSecret = this.secretPattern.test(key);
 
       const existing = this.variables.get(key);
