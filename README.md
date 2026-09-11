@@ -26,7 +26,7 @@ Deployed via CDN or installed via NPM, `lamba` injects a non-intrusive floating 
 Include the script tag in your `index.html` file before your application bundle:
 
 ```html
-<script src="https://unpkg.com/lamba"></script>
+<script src="https://unpkg.com/@ojolowoblue/lamba"></script>
 ```
 
 That's it! A floating settings button (⚙️) will automatically appear in the bottom-right corner of your web page.
@@ -36,17 +36,17 @@ That's it! A floating settings button (⚙️) will automatically appear in the 
 Install `lamba` in your project:
 
 ```bash
-npm install lamba
+npm install @ojolowoblue/lamba
 # or
-yarn add lamba
+yarn add @ojolowoblue/lamba
 # or
-pnpm add lamba
+pnpm add @ojolowoblue/lamba
 ```
 
 Initialize `lamba` in your application entrypoint (`src/main.ts` or `src/index.js`):
 
 ```typescript
-import lamba from 'lamba';
+import lamba from '@ojolowoblue/lamba';
 
 lamba.init({
   position: 'bottom-right',
@@ -83,7 +83,7 @@ Wrap your existing `import.meta.env` (Vite) or `process.env` (Webpack/Next.js) o
 
 ```typescript
 // src/config.ts
-import lamba from 'lamba';
+import lamba from '@ojolowoblue/lamba';
 
 // Wrap your env object in a dynamic ES Proxy
 export const env = lamba.wrap(import.meta.env);
@@ -115,7 +115,7 @@ Import `useLambaEnv` from `lamba/react` to subscribe your components reactively 
 
 ```tsx
 import React from 'react';
-import { useLambaEnv } from 'lamba/react';
+import { useLambaEnv } from '@ojolowoblue/lamba/react';
 
 export function UserDashboard() {
   const apiBase = useLambaEnv('VITE_API_BASE_URL', 'https://api.dev.com');
@@ -142,7 +142,7 @@ Import `useLambaEnv` from `lamba/vue` as a reactive composition Vue Ref:
 
 ```vue
 <script setup lang="ts">
-import { useLambaEnv } from 'lamba/vue';
+import { useLambaEnv } from '@ojolowoblue/lamba/vue';
 
 const apiBase = useLambaEnv('VITE_API_BASE_URL', 'https://api.dev.com');
 const featureFlag = useLambaEnv('VITE_NEW_HEADER', 'false');
@@ -213,7 +213,7 @@ Programmatically controls the visibility of the lamba modal panel.
 To prevent end-users from overriding environment variables in production, conditionally initialize `lamba` only in non-production environments:
 
 ```typescript
-import lamba from 'lamba';
+import lamba from '@ojolowoblue/lamba';
 
 lamba.init({
   enabled: process.env.NODE_ENV !== 'production',
