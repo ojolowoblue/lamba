@@ -1,0 +1,30 @@
+import { ref, onUnmounted, getCurrentInstance, Ref } from "vue";
+import { lamba } from "../index";
+
+/**
+ * Vue Composable for consuming reactive environment variables updated by lamba.
+ *
+ * @param key The environment variable key name (e.g. 'VITE_API_URL')
+ * @param defaultValue Fallback value if the variable is not set
+ * @returns Vue Ref string
+ */
+export function useLambaEnv(
+  key: string,
+  defaultValue: string = "",
+): Ref<string> {
+  const envValue = ref<string>(lamba.get(key, defaultValue)) as Ref<string>;
+
+  const unsubscribe = lamba.onChange((changedKey: string) => {
+    if (changedKey === key) {
+      envValue.value = lamba.get(key, defaultValue);
+    }
+  });
+
+  if (getCurrentInstance()) {
+    onUnmounted(() => {
+      unsubscribe();
+    });
+  }
+
+  return envValue;
+}

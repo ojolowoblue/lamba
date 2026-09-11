@@ -1,0 +1,68 @@
+{
+  "name": "lamba",
+  "version": "1.0.0",
+  "description": "A universal dev tool for viewing, overriding, and swapping environment variables live in web applications.",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "unpkg": "./dist/lamba.min.js",
+  "jsdelivr": "./dist/lamba.min.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./react": {
+      "types": "./dist/integrations/react.d.ts",
+      "import": "./dist/integrations/react.mjs",
+      "require": "./dist/integrations/react.js"
+    },
+    "./vue": {
+      "types": "./dist/integrations/vue.d.ts",
+      "import": "./dist/integrations/vue.mjs",
+      "require": "./dist/integrations/vue.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "env",
+    "dotenv",
+    "dev-tool",
+    "environment-variables",
+    "react",
+    "vue",
+    "nextjs",
+    "astro",
+    "vite",
+    "unpkg"
+  ],
+  "author": "AG",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
+    "vue": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "react": "^18.3.1",
+    "tsup": "^8.0.2",
+    "typescript": "^5.4.5",
+    "vue": "^3.4.27"
+  }
+}
