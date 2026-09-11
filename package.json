@@ -1,6 +1,6 @@
 {
   "name": "@ojolowoblue/lamba",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A universal dev tool for viewing, overriding, and swapping environment variables live in web applications.",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
