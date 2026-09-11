@@ -1,0 +1,49 @@
+name: Continuous Release & Publish
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Build & Publish to NPM
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build Project
+        run: npm run build
+
+      - name: Check & Publish to NPM
+        id: publish
+        uses: JS-DevTools/npm-publish@v3
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+          access: public
+
+      - name: Create GitHub Release if Published
+        if: steps.publish.outputs.type != 'none'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.publish.outputs.version }}
+          name: Release v${{ steps.publish.outputs.version }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
