@@ -4,7 +4,7 @@ import { lamba } from "../index";
 /**
  * Vue Composable for consuming reactive environment variables updated by lamba.
  *
- * @param key The environment variable key name (e.g. 'VITE_API_URL')
+ * @param key The environment variable key name (e.g. 'API_URL', 'NEXT_PUBLIC_API_URL', 'VITE_API_URL')
  * @param defaultValue Fallback value if the variable is not set
  * @returns Vue Ref string
  */

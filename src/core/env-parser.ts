@@ -59,31 +59,50 @@ export function autoDiscoverBrowserEnv(): Record<string, string> {
 
   if (typeof window === 'undefined') return discovered;
 
+  const extractPrimitiveProps = (obj: any) => {
+    if (!obj || typeof obj !== 'object') return;
+    for (const [k, v] of Object.entries(obj)) {
+      if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
+        discovered[k] = String(v);
+      }
+    }
+  };
+
   // 1. Inspect window.process.env
   try {
     const winProcess = (window as any).process;
     if (winProcess && winProcess.env && typeof winProcess.env === 'object') {
-      for (const [k, v] of Object.entries(winProcess.env)) {
-        if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
-          discovered[k] = String(v);
-        }
-      }
+      extractPrimitiveProps(winProcess.env);
     }
   } catch (e) {}
 
-  // 2. Inspect window.__ENV__ or window.ENV
+  // 2. Inspect Next.js __NEXT_DATA__ env & runtimeConfig
   try {
-    const customEnv = (window as any).__ENV__ || (window as any).ENV;
-    if (customEnv && typeof customEnv === 'object') {
-      for (const [k, v] of Object.entries(customEnv)) {
-        if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
-          discovered[k] = String(v);
-        }
-      }
+    const nextData = (window as any).__NEXT_DATA__;
+    if (nextData) {
+      if (nextData.env) extractPrimitiveProps(nextData.env);
+      if (nextData.runtimeConfig?.public) extractPrimitiveProps(nextData.runtimeConfig.public);
     }
   } catch (e) {}
 
-  // 3. Inspect HTML meta tags (e.g. <meta name="env:API_KEY" content="xyz"> or <meta name="lamba-env" content="API_KEY=xyz&MODE=dev">)
+  // 3. Inspect Nuxt __NUXT__ public runtime config
+  try {
+    const nuxtData = (window as any).__NUXT__;
+    if (nuxtData?.config?.public) {
+      extractPrimitiveProps(nuxtData.config.public);
+    }
+  } catch (e) {}
+
+  // 4. Inspect window.__ENV__ or window.ENV or window.PUBLIC_ENV
+  try {
+    const win = window as any;
+    const customEnv = win.__ENV__ || win.ENV || win.PUBLIC_ENV || win.__LAMBA_ENV__;
+    if (customEnv) {
+      extractPrimitiveProps(customEnv);
+    }
+  } catch (e) {}
+
+  // 5. Inspect HTML meta tags (e.g. <meta name="env:API_KEY" content="xyz"> or <meta name="lamba-env" content="API_KEY=xyz&MODE=dev">)
   try {
     const metaTags = document.querySelectorAll('meta');
     metaTags.forEach((meta) => {

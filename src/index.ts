@@ -45,6 +45,26 @@ export class LambaManager {
    * in a dynamic proxy that implicitly resolves live overrides from lamba.
    */
   public wrap<T extends object>(targetEnv: T): T {
+    if (!this.store) {
+      this.init();
+    }
+
+    if (targetEnv && typeof targetEnv === 'object' && this.store) {
+      try {
+        const defaultObj: Record<string, string> = {};
+        for (const [k, v] of Object.entries(targetEnv)) {
+          if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
+            defaultObj[k] = String(v);
+          }
+        }
+        if (Object.keys(defaultObj).length > 0) {
+          this.store.mergeDefaults(defaultObj);
+        }
+      } catch (e) {
+        // Ignore un-enumerable or restricted environment targets
+      }
+    }
+
     const self = this;
     return new Proxy(targetEnv, {
       get(target, prop: string | symbol) {

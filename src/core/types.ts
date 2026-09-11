@@ -48,6 +48,12 @@ export interface LambaOptions {
    * Defaults to true.
    */
   interceptNetworkRequests?: boolean;
+
+  /**
+   * Optional prefix filter or array of prefixes to include (e.g. ['VITE_', 'NEXT_PUBLIC_', 'REACT_APP_']).
+   * If omitted, null, or empty, ALL environment variable keys are allowed and supported regardless of prefix.
+   */
+  allowedPrefixes?: string | string[] | RegExp | null;
 }
 
 

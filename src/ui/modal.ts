@@ -159,7 +159,7 @@ export class ModalUI {
     `;
 
     footer.querySelector('.lamba-add-var-btn')?.addEventListener('click', () => {
-      const key = prompt('Enter new environment variable key name (e.g. VITE_API_URL):');
+      const key = prompt('Enter new environment variable key name (e.g. API_URL, NEXT_PUBLIC_API_URL, REACT_APP_API_URL, VITE_API_URL):');
       if (key) {
         const value = prompt(`Enter value for ${key}:`) || '';
         this.store.setOverride(key, value);

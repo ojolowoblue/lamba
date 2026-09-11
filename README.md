@@ -1,6 +1,6 @@
 # lamba ⚡
 
-**`lamba`** is a universal, lightweight developer tool and browser widget for viewing, overriding, and swapping environment variables live in web applications (React, Vue, Next.js, Vite, Astro, Svelte, or Vanilla HTML/JS)—**without touching source code, restarting dev servers, or editing `.env` files.**
+**`lamba`** is a universal, lightweight developer tool and browser widget for viewing, overriding, and swapping environment variables live in web applications—supporting **all framework prefixes** (`VITE_`, `NEXT_PUBLIC_`, `REACT_APP_`, `VUE_APP_`, `PUBLIC_`, `EXPO_PUBLIC_`, `NUXT_`, `GATSBY_`, or unprefixed keys) across React, Vue, Next.js, Vite, Create React App, Astro, Nuxt, Svelte, or Vanilla HTML/JS—**without touching source code, restarting dev servers, or editing `.env` files.**
 
 Deployed via CDN or installed via NPM, `lamba` injects a non-intrusive floating UI powered by **Shadow DOM encapsulation**. Devs, QA engineers, and project managers can test multiple API environments, toggle feature flags, switch authentication tokens, and swap backend clusters on the fly directly in the browser.
 
@@ -9,6 +9,7 @@ Deployed via CDN or installed via NPM, `lamba` injects a non-intrusive floating 
 ## 🌟 Key Features
 
 - ⚡ **Zero-Setup CDN & NPM Support**: Add a single `<script>` tag or install via NPM/Yarn/PNPM.
+- 🌐 **Universal Framework & Prefix Support**: Works out of the box with any env variable prefix (`VITE_`, `NEXT_PUBLIC_`, `REACT_APP_`, `VUE_APP_`, `PUBLIC_`, `EXPO_PUBLIC_`, `NUXT_`, `GATSBY_`) or unprefixed variables.
 - 🛡️ **Shadow DOM Encapsulation**: Modern glassmorphism UI rendered inside a Custom Element (`<lamba-widget>`), ensuring zero CSS style leakage into or out of your app.
 - 🌐 **Automatic Network Interception**: Automatically intercepts outbound `fetch()` and `XMLHttpRequest` calls hitting default base URLs and redirects them to your live active environment overrides on the fly.
 - 🎛️ **Preset Profile Manager**: Save named environment snapshots (e.g., *Staging API*, *Local Mock Server*, *QA Test Suite*, *Production Read-Only*) and switch between them with one click.
@@ -51,9 +52,11 @@ import lamba from '@ojolowoblue/lamba';
 lamba.init({
   position: 'bottom-right',
   env: {
-    VITE_API_BASE_URL: 'https://api.dev.example.com',
-    VITE_FEATURE_NEW_CHECKOUT: 'false',
+    // Supports any env prefix (VITE_, NEXT_PUBLIC_, REACT_APP_, VUE_APP_, PUBLIC_) or custom keys:
+    NEXT_PUBLIC_API_URL: 'https://api.dev.example.com',
+    REACT_APP_FEATURE_FLAG: 'false',
     VITE_ENABLE_ANALYTICS: 'true',
+    API_BASE_URL: 'https://api.dev.example.com',
   },
 });
 ```
@@ -174,6 +177,7 @@ Initializes the lamba manager, hydrates saved overrides from `localStorage`, ena
 | `secretKeysPattern` | `RegExp` | `/(KEY\|SECRET\|TOKEN\|PASSWORD\|AUTH\|PRIVATE)/i` | Regular expression to automatically obscure sensitive keys in the UI. |
 | `autoFetchEnvFile` | `boolean` | `false` | Whether to attempt fetching root `/.env` file during local development. |
 | `interceptNetworkRequests` | `boolean` | `true` | Whether to implicitly intercept `fetch` & `XHR` calls matching original base URLs. |
+| `allowedPrefixes` | `string \| string[] \| RegExp \| null` | `null` | Optional prefix filter (e.g. `['VITE_', 'NEXT_PUBLIC_']`). Omitting allows ALL keys regardless of prefix. |
 
 ---
 

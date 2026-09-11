@@ -15,12 +15,14 @@ export class EnvStore {
   private variables: Map<string, EnvVariable> = new Map();
   private overrides: Record<string, string> = {};
   private secretPattern: RegExp;
+  private allowedPrefixes?: string | string[] | RegExp | null;
   private envChangeListeners: Set<EnvChangeListener> = new Set();
   private storeChangeListeners: Set<StoreChangeListener> = new Set();
   public presetManager: PresetManager;
 
   constructor(options: LambaOptions = {}) {
     this.secretPattern = options.secretKeysPattern || DEFAULT_SECRET_PATTERN;
+    this.allowedPrefixes = options.allowedPrefixes;
     this.presetManager = new PresetManager();
 
     // 1. Load initial overrides from localStorage
@@ -71,7 +73,6 @@ export class EnvStore {
   }
 
   /**
-   * Monkey-patches window.process.env to reactively return overridden values.
    */
   private patchProcessEnv(): void {
     if (typeof window === 'undefined') return;
@@ -106,9 +107,33 @@ export class EnvStore {
     }
   }
 
+  /**
+   * Checks if an environment variable key satisfies the allowedPrefixes option.
+   */
+  public isAllowedKey(key: string): boolean {
+    if (!this.allowedPrefixes) return true;
+
+    if (typeof this.allowedPrefixes === 'string') {
+      return key.startsWith(this.allowedPrefixes);
+    }
+
+    if (Array.isArray(this.allowedPrefixes)) {
+      if (this.allowedPrefixes.length === 0) return true;
+      return this.allowedPrefixes.some((p) => key.startsWith(p));
+    }
+
+    if (this.allowedPrefixes instanceof RegExp) {
+      return this.allowedPrefixes.test(key);
+    }
+
+    return true;
+  }
+
   public mergeDefaults(env: Record<string, string>): void {
     let changed = false;
     for (const [key, defaultValue] of Object.entries(env)) {
+      if (!this.isAllowedKey(key)) continue;
+
       const isOverridden = key in this.overrides;
       const currentValue = isOverridden ? this.overrides[key] : defaultValue;
       const isSecret = this.secretPattern.test(key);
