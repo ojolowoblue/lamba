@@ -1,3 +1,5 @@
+export type { LambaStorageAdapter } from './storage';
+
 export interface EnvVariable {
   key: string;
   value: any;
@@ -54,6 +56,24 @@ export interface LambaOptions {
    * If omitted, null, or empty, ALL environment variable keys are allowed and supported regardless of prefix.
    */
   allowedPrefixes?: string | string[] | RegExp | null;
+
+  /**
+   * Storage strategy for persisting overrides and presets across page reloads:
+   * - `'local'`   — (default) Standard `localStorage`. Persists indefinitely across tabs & reloads.
+   *               Visible in DevTools → Application → Local Storage.
+   * - `'session'` — `sessionStorage`. Survives page reloads within the same tab, but cleared
+   *               when the tab is closed. Visible in DevTools → Application → Session Storage.
+   * - `'memory'`  — In-memory only. Most secure option — zero bytes written to any browser storage.
+   *               Overrides are destroyed when the tab closes or navigates away.
+   *               Nothing appears in DevTools Storage.
+   */
+  storageStrategy?: 'local' | 'session' | 'memory';
+
+  /**
+   * Provide a fully custom storage adapter that conforms to the `LambaStorageAdapter` interface.
+   * When provided, this takes precedence over `storageStrategy`.
+   */
+  storage?: import('./storage').LambaStorageAdapter;
 }
 
 

@@ -232,3 +232,9 @@ if (typeof window !== 'undefined') {
 export default lamba;
 export * from './core/types';
 export { parseEnvString, stringifyEnv } from './core/env-parser';
+export {
+  type LambaStorageAdapter,
+  LocalStorageAdapter,
+  SessionStorageAdapter,
+  MemoryStorageAdapter,
+} from './core/storage';

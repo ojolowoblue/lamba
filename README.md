@@ -167,7 +167,7 @@ const isNewHeader = useLambaEnv<boolean>('VITE_NEW_HEADER', false);
 
 ### `lamba.init(options?: LambaOptions): LambaManager`
 
-Initializes the lamba manager, hydrates saved overrides from `localStorage`, enables network interceptors, and mounts the floating Shadow DOM UI.
+Initializes the lamba manager, hydrates saved overrides from the configured storage backend, enables network interceptors, and mounts the floating Shadow DOM UI.
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -178,6 +178,8 @@ Initializes the lamba manager, hydrates saved overrides from `localStorage`, ena
 | `autoFetchEnvFile` | `boolean` | `false` | Whether to attempt fetching root `/.env` file during local development. |
 | `interceptNetworkRequests` | `boolean` | `true` | Whether to implicitly intercept `fetch` & `XHR` calls matching original base URLs. |
 | `allowedPrefixes` | `string \| string[] \| RegExp \| null` | `null` | Optional prefix filter (e.g. `['VITE_', 'NEXT_PUBLIC_']`). Omitting allows ALL keys regardless of prefix. |
+| `storageStrategy` | `'local' \| 'session' \| 'memory'` | `'local'` | Where overrides and presets are persisted. See [Storage Strategies](#-storage-strategies) below. |
+| `storage` | `LambaStorageAdapter` | `undefined` | Provide a fully custom storage adapter. Takes precedence over `storageStrategy`. |
 
 ---
 
@@ -187,7 +189,7 @@ Initializes the lamba manager, hydrates saved overrides from `localStorage`, ena
 Returns the active value for the specified environment key (returns active override if present, otherwise default value or fallback). Preserves numbers, booleans, and objects.
 
 #### `lamba.set(key: string, value: any): void`
-Programmatically overrides an environment variable live at runtime with any data type. The change is persisted in `localStorage` and triggers UI and listener updates.
+Programmatically overrides an environment variable live at runtime with any data type. The change is persisted in the configured storage backend and triggers UI and listener updates.
 
 #### `lamba.remove(key: string): void`
 Removes an override for a specific environment variable key, reverting it to its default value.
@@ -212,6 +214,57 @@ Programmatically controls the visibility of the lamba modal panel.
 
 ---
 
+## 🔐 Storage Strategies
+
+Control where lamba persists overrides and presets via the `storageStrategy` option:
+
+| Strategy | Visibility in DevTools | Survives Tab Close? | XSS Storage Scraping Risk |
+| :--- | :--- | :--- | :--- |
+| `'local'` *(default)* | ⚠️ Visible (plain-text) | ✅ Yes (Indefinitely) | ⚠️ Yes |
+| `'session'` | ⚠️ Visible (plain-text) | ❌ No (Cleared on close) | ⚠️ Yes |
+| `'memory'` | ✅ **Not visible (0 bytes stored)** | ❌ No (GC'd on close) | ✅ **No** |
+
+### In-Memory (Most Secure)
+
+```typescript
+lamba.init({
+  storageStrategy: 'memory', // Nothing written to DevTools Storage
+  env: { VITE_API_URL: import.meta.env.VITE_API_URL },
+});
+```
+
+### Session (Tab-Ephemeral)
+
+```typescript
+lamba.init({
+  storageStrategy: 'session', // Cleared automatically when tab closes
+  env: { VITE_API_URL: import.meta.env.VITE_API_URL },
+});
+```
+
+### Custom Adapter
+
+Implement the `LambaStorageAdapter` interface to plug in any storage backend (encrypted storage, Electron keytar, IndexedDB, etc.):
+
+```typescript
+import lamba, { type LambaStorageAdapter } from '@ojolowoblue/lamba';
+
+// Example: an encrypted wrapper around sessionStorage
+const encryptedAdapter: LambaStorageAdapter = {
+  getItem: (key) => decrypt(sessionStorage.getItem(key)),
+  setItem: (key, value) => sessionStorage.setItem(key, encrypt(value)),
+  removeItem: (key) => sessionStorage.removeItem(key),
+  clear: () => sessionStorage.clear(),
+};
+
+lamba.init({
+  storage: encryptedAdapter,
+  env: { VITE_API_URL: import.meta.env.VITE_API_URL },
+});
+```
+
+---
+
 ## 🔒 Production Security Best Practice
 
 To prevent end-users from overriding environment variables in production, conditionally initialize `lamba` only in non-production environments:
@@ -221,6 +274,7 @@ import lamba from '@ojolowoblue/lamba';
 
 lamba.init({
   enabled: process.env.NODE_ENV !== 'production',
+  storageStrategy: 'memory', // Use memory storage so nothing lingers in DevTools
   env: {
     VITE_API_URL: import.meta.env.VITE_API_URL,
   },
@@ -233,12 +287,12 @@ lamba.init({
 
 <details>
 <summary><b>Does lamba modify my local <code>.env</code> files on disk?</b></summary>
-<p>No. <code>lamba</code> operates entirely in browser memory and persists overrides in <code>localStorage</code>. It does not write to disk, so your git status remains clean.</p>
+<p>No. <code>lamba</code> operates entirely in browser memory and optionally persists overrides in storage. It does not write to disk, so your git status remains clean.</p>
 </details>
 
 <details>
 <summary><b>Do overrides persist when I refresh the page?</b></summary>
-<p>Yes. Overrides and active preset profiles are saved in <code>localStorage</code> and automatically restored upon page reloads.</p>
+<p>It depends on the <code>storageStrategy</code>. With <code>'local'</code> (default), overrides persist indefinitely. With <code>'session'</code>, they survive reloads but clear when the tab is closed. With <code>'memory'</code>, overrides are lost on any page reload.</p>
 </details>
 
 <details>

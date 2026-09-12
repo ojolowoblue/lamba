@@ -1,4 +1,5 @@
 import { PresetProfile } from './types';
+import { LambaStorageAdapter } from './storage';
 
 const STORAGE_PRESETS_KEY = '__lamba_presets__';
 const STORAGE_ACTIVE_PRESET_KEY = '__lamba_active_preset__';
@@ -6,37 +7,35 @@ const STORAGE_ACTIVE_PRESET_KEY = '__lamba_active_preset__';
 export class PresetManager {
   private presets: PresetProfile[] = [];
   private activePresetId: string | null = null;
+  private storage: LambaStorageAdapter;
 
-  constructor() {
+  constructor(storage: LambaStorageAdapter) {
+    this.storage = storage;
     this.loadFromStorage();
   }
 
   private loadFromStorage(): void {
-    if (typeof localStorage === 'undefined') return;
-
     try {
-      const rawPresets = localStorage.getItem(STORAGE_PRESETS_KEY);
+      const rawPresets = this.storage.getItem(STORAGE_PRESETS_KEY);
       if (rawPresets) {
         this.presets = JSON.parse(rawPresets);
       }
-      this.activePresetId = localStorage.getItem(STORAGE_ACTIVE_PRESET_KEY);
+      this.activePresetId = this.storage.getItem(STORAGE_ACTIVE_PRESET_KEY);
     } catch (e) {
-      console.warn('[lamba] Failed to parse presets from localStorage', e);
+      console.warn('[lamba] Failed to parse presets from storage', e);
     }
   }
 
   private saveToStorage(): void {
-    if (typeof localStorage === 'undefined') return;
-
     try {
-      localStorage.setItem(STORAGE_PRESETS_KEY, JSON.stringify(this.presets));
+      this.storage.setItem(STORAGE_PRESETS_KEY, JSON.stringify(this.presets));
       if (this.activePresetId) {
-        localStorage.setItem(STORAGE_ACTIVE_PRESET_KEY, this.activePresetId);
+        this.storage.setItem(STORAGE_ACTIVE_PRESET_KEY, this.activePresetId);
       } else {
-        localStorage.removeItem(STORAGE_ACTIVE_PRESET_KEY);
+        this.storage.removeItem(STORAGE_ACTIVE_PRESET_KEY);
       }
     } catch (e) {
-      console.warn('[lamba] Failed to save presets to localStorage', e);
+      console.warn('[lamba] Failed to save presets to storage', e);
     }
   }
 

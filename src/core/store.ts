@@ -7,6 +7,7 @@ import {
 } from './types';
 import { PresetManager } from './preset-manager';
 import { autoDiscoverBrowserEnv, tryFetchRootEnvFile } from './env-parser';
+import { LambaStorageAdapter, createStorageAdapter } from './storage';
 
 const STORAGE_OVERRIDES_KEY = '__lamba_overrides__';
 const DEFAULT_SECRET_PATTERN = /(KEY|SECRET|TOKEN|PASSWORD|AUTH|PRIVATE|CREDENTIAL|SIGNATURE)/i;
@@ -18,12 +19,14 @@ export class EnvStore {
   private allowedPrefixes?: string | string[] | RegExp | null;
   private envChangeListeners: Set<EnvChangeListener> = new Set();
   private storeChangeListeners: Set<StoreChangeListener> = new Set();
+  private storage: LambaStorageAdapter;
   public presetManager: PresetManager;
 
   constructor(options: LambaOptions = {}) {
     this.secretPattern = options.secretKeysPattern || DEFAULT_SECRET_PATTERN;
     this.allowedPrefixes = options.allowedPrefixes;
-    this.presetManager = new PresetManager();
+    this.storage = createStorageAdapter(options.storageStrategy ?? 'local', options.storage);
+    this.presetManager = new PresetManager(this.storage);
 
     // 1. Load initial overrides from localStorage
     this.loadOverridesFromStorage();
@@ -52,23 +55,21 @@ export class EnvStore {
   }
 
   private loadOverridesFromStorage(): void {
-    if (typeof localStorage === 'undefined') return;
     try {
-      const stored = localStorage.getItem(STORAGE_OVERRIDES_KEY);
+      const stored = this.storage.getItem(STORAGE_OVERRIDES_KEY);
       if (stored) {
         this.overrides = JSON.parse(stored);
       }
     } catch (e) {
-      console.warn('[lamba] Failed to parse overrides from localStorage', e);
+      console.warn('[lamba] Failed to parse overrides from storage', e);
     }
   }
 
   private saveOverridesToStorage(): void {
-    if (typeof localStorage === 'undefined') return;
     try {
-      localStorage.setItem(STORAGE_OVERRIDES_KEY, JSON.stringify(this.overrides));
+      this.storage.setItem(STORAGE_OVERRIDES_KEY, JSON.stringify(this.overrides));
     } catch (e) {
-      console.warn('[lamba] Failed to save overrides to localStorage', e);
+      console.warn('[lamba] Failed to save overrides to storage', e);
     }
   }
 
