@@ -381,7 +381,15 @@ export class ModalUI {
 
     const inputEl = card.querySelector('.var-input') as HTMLInputElement;
     inputEl.addEventListener('change', () => {
-      this.store.setOverride(varItem.key, inputEl.value);
+      let val: any = inputEl.value;
+      if (typeof varItem.defaultValue === 'boolean') {
+        if (val === 'true') val = true;
+        else if (val === 'false') val = false;
+      } else if (typeof varItem.defaultValue === 'number') {
+        const num = Number(val);
+        if (!isNaN(num) && val.trim() !== '') val = num;
+      }
+      this.store.setOverride(varItem.key, val);
     });
 
     card.querySelector('.toggle-secret-btn')?.addEventListener('click', () => {
@@ -398,7 +406,8 @@ export class ModalUI {
 
   private escapeHtml(str: any): string {
     if (str === null || str === undefined) return '';
-    return String(str)
+    const text = typeof str === 'object' ? JSON.stringify(str) : String(str);
+    return text
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')

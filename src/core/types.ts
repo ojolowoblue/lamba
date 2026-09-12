@@ -1,7 +1,7 @@
 export interface EnvVariable {
   key: string;
-  value: string;
-  defaultValue: string;
+  value: any;
+  defaultValue: any;
   isOverridden: boolean;
   isSecret?: boolean;
 }
@@ -9,15 +9,15 @@ export interface EnvVariable {
 export interface PresetProfile {
   id: string;
   name: string;
-  overrides: Record<string, string>;
+  overrides: Record<string, any>;
   createdAt: number;
 }
 
 export interface LambaOptions {
   /**
-   * Initial environment variable key-values to supply to lamba.
+   * Initial environment variable key-values to supply to lamba. Accepts strings, numbers, booleans, objects, etc.
    */
-  env?: Record<string, string>;
+  env?: Record<string, any>;
   
   /**
    * Whether lamba floating UI is enabled. Defaults to true in non-production or when specified.
@@ -57,5 +57,5 @@ export interface LambaOptions {
 }
 
 
-export type EnvChangeListener = (key: string, value: string, isOverridden: boolean) => void;
+export type EnvChangeListener = (key: string, value: any, isOverridden: boolean) => void;
 export type StoreChangeListener = (variables: Record<string, EnvVariable>, presets: PresetProfile[], activePresetId: string | null) => void;

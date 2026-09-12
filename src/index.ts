@@ -17,7 +17,7 @@ export class LambaManager {
    * Implicit ES Proxy object where properties like `lamba.env.VITE_API_BASE_URL`
    * return the live active overridden value automatically.
    */
-  public env: Record<string, string>;
+  public env: Record<string, any>;
 
   constructor() {
     const self = this;
@@ -30,9 +30,9 @@ export class LambaManager {
         }
         return undefined;
       },
-      set(_target, prop: string, value: string) {
+      set(_target, prop: string, value: any) {
         if (typeof prop === 'string') {
-          self.set(prop, String(value));
+          self.set(prop, value);
           return true;
         }
         return false;
@@ -51,11 +51,9 @@ export class LambaManager {
 
     if (targetEnv && typeof targetEnv === 'object' && this.store) {
       try {
-        const defaultObj: Record<string, string> = {};
+        const defaultObj: Record<string, any> = {};
         for (const [k, v] of Object.entries(targetEnv)) {
-          if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
-            defaultObj[k] = String(v);
-          }
+          defaultObj[k] = v;
         }
         if (Object.keys(defaultObj).length > 0) {
           this.store.mergeDefaults(defaultObj);
@@ -71,10 +69,24 @@ export class LambaManager {
         if (typeof prop === 'string') {
           const overrideVal = self.get(prop);
           if (overrideVal !== undefined && overrideVal !== '') {
+            const targetVal = Reflect.get(target, prop);
+            if (typeof targetVal === 'boolean') {
+              if (overrideVal === 'true' || overrideVal === true) return true;
+              if (overrideVal === 'false' || overrideVal === false) return false;
+            } else if (typeof targetVal === 'number' && typeof overrideVal === 'string') {
+              const num = Number(overrideVal);
+              if (!isNaN(num)) return num;
+            }
             return overrideVal;
           }
         }
         return Reflect.get(target, prop);
+      },
+      set(target, prop: string | symbol, value: any) {
+        if (typeof prop === 'string') {
+          self.set(prop, value);
+        }
+        return Reflect.set(target, prop, value);
       }
     });
   }
@@ -144,18 +156,18 @@ export class LambaManager {
   /**
    * Gets the active value of an environment variable (returns overridden value if active, otherwise default).
    */
-  public get(key: string, fallback?: string): string {
+  public get<T = any>(key: string, fallback?: T): T {
     if (!this.store) {
       // Lazy init store if called before explicit init
       this.init();
     }
-    return this.store?.get(key, fallback) ?? fallback ?? '';
+    return (this.store?.get<T>(key, fallback) ?? fallback) as T;
   }
 
   /**
    * Overrides an environment variable live at runtime.
    */
-  public set(key: string, value: string): void {
+  public set(key: string, value: any): void {
     if (!this.store) this.init();
     this.store?.setOverride(key, value);
   }

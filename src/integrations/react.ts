@@ -8,19 +8,19 @@ import { lamba } from "../index";
  * @param defaultValue Fallback value if the variable is not set
  * @returns Current active environment variable value
  */
-export function useLambaEnv(key: string, defaultValue: string = ""): string {
-  const [value, setValue] = useState<string>(() =>
-    lamba.get(key, defaultValue),
+export function useLambaEnv<T = any>(key: string, defaultValue?: T): T {
+  const [value, setValue] = useState<T>(() =>
+    lamba.get<T>(key, defaultValue as T),
   );
 
   useEffect(() => {
     // Sync current value in case it changed prior to mount
-    setValue(lamba.get(key, defaultValue));
+    setValue(lamba.get<T>(key, defaultValue as T));
 
     // Subscribe to store changes for this key
     const unsubscribe = lamba.onChange((changedKey: string) => {
       if (changedKey === key) {
-        setValue(lamba.get(key, defaultValue));
+        setValue(lamba.get<T>(key, defaultValue as T));
       }
     });
 

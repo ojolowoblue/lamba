@@ -13,7 +13,7 @@ const DEFAULT_SECRET_PATTERN = /(KEY|SECRET|TOKEN|PASSWORD|AUTH|PRIVATE|CREDENTI
 
 export class EnvStore {
   private variables: Map<string, EnvVariable> = new Map();
-  private overrides: Record<string, string> = {};
+  private overrides: Record<string, any> = {};
   private secretPattern: RegExp;
   private allowedPrefixes?: string | string[] | RegExp | null;
   private envChangeListeners: Set<EnvChangeListener> = new Set();
@@ -134,9 +134,9 @@ export class EnvStore {
     for (const [key, rawDefault] of Object.entries(env)) {
       if (!this.isAllowedKey(key)) continue;
 
-      const defaultValue = rawDefault !== null && rawDefault !== undefined ? String(rawDefault) : '';
+      const defaultValue = rawDefault;
       const isOverridden = key in this.overrides;
-      const currentValue = isOverridden ? String(this.overrides[key] ?? '') : defaultValue;
+      const currentValue = isOverridden ? this.overrides[key] : defaultValue;
       const isSecret = this.secretPattern.test(key);
 
       const existing = this.variables.get(key);
@@ -166,12 +166,12 @@ export class EnvStore {
     }
   }
 
-  public get(key: string, fallback?: string): string | undefined {
+  public get<T = any>(key: string, fallback?: T): T | undefined {
     if (key in this.overrides) {
-      return this.overrides[key];
+      return this.overrides[key] as T;
     }
     const item = this.variables.get(key);
-    if (item) return item.value;
+    if (item) return item.value as T;
     return fallback;
   }
 
@@ -183,11 +183,11 @@ export class EnvStore {
     return result;
   }
 
-  public getOverrides(): Record<string, string> {
+  public getOverrides(): Record<string, any> {
     return { ...this.overrides };
   }
 
-  public setOverride(key: string, value: string): void {
+  public setOverride(key: string, value: any): void {
     const trimmedKey = key.trim();
     if (!trimmedKey) return;
 

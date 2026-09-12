@@ -8,15 +8,15 @@ import { lamba } from "../index";
  * @param defaultValue Fallback value if the variable is not set
  * @returns Vue Ref string
  */
-export function useLambaEnv(
+export function useLambaEnv<T = any>(
   key: string,
-  defaultValue: string = "",
-): Ref<string> {
-  const envValue = ref<string>(lamba.get(key, defaultValue)) as Ref<string>;
+  defaultValue?: T,
+): Ref<T> {
+  const envValue = ref<T>(lamba.get<T>(key, defaultValue as T)) as Ref<T>;
 
   const unsubscribe = lamba.onChange((changedKey: string) => {
     if (changedKey === key) {
-      envValue.value = lamba.get(key, defaultValue);
+      envValue.value = lamba.get<T>(key, defaultValue as T);
     }
   });
 

@@ -48,7 +48,7 @@ export class PresetManager {
     return this.activePresetId;
   }
 
-  public createPreset(name: string, overrides: Record<string, string>): PresetProfile {
+  public createPreset(name: string, overrides: Record<string, any>): PresetProfile {
     const newPreset: PresetProfile = {
       id: 'preset_' + Math.random().toString(36).substring(2, 9),
       name: name.trim() || 'Untitled Preset',
