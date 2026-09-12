@@ -27,7 +27,7 @@ Deployed via CDN or installed via NPM, `lamba` injects a non-intrusive floating 
 Include the script tag in your `index.html` file before your application bundle:
 
 ```html
-<script src="https://unpkg.com/@ojolowoblue/lamba"></script>
+<script src="https://unpkg.com/@ojolowoblue/lamba" data-lamba-auto></script>
 ```
 
 That's it! A floating settings button (⚙️) will automatically appear in the bottom-right corner of your web page.
@@ -52,11 +52,11 @@ import lamba from '@ojolowoblue/lamba';
 lamba.init({
   position: 'bottom-right',
   env: {
-    // Supports any env prefix (VITE_, NEXT_PUBLIC_, REACT_APP_, VUE_APP_, PUBLIC_) or custom keys:
+    // Supports any data type (strings, numbers, booleans, objects) & any prefix:
     NEXT_PUBLIC_API_URL: 'https://api.dev.example.com',
-    REACT_APP_FEATURE_FLAG: 'false',
-    VITE_ENABLE_ANALYTICS: 'true',
-    API_BASE_URL: 'https://api.dev.example.com',
+    PORT: 3000,
+    VITE_ENABLE_ANALYTICS: true,
+    FEATURE_FLAGS: { newCheckout: true },
   },
 });
 ```
@@ -88,7 +88,7 @@ Wrap your existing `import.meta.env` (Vite) or `process.env` (Webpack/Next.js) o
 // src/config.ts
 import lamba from '@ojolowoblue/lamba';
 
-// Wrap your env object in a dynamic ES Proxy
+// Wrap your env object in a dynamic ES Proxy (preserves primitive boolean & number types!)
 export const env = lamba.wrap(import.meta.env);
 
 // Access keys anywhere in your application:
@@ -121,15 +121,15 @@ import React from 'react';
 import { useLambaEnv } from '@ojolowoblue/lamba/react';
 
 export function UserDashboard() {
-  const apiBase = useLambaEnv('VITE_API_BASE_URL', 'https://api.dev.com');
-  const showBetaFeature = useLambaEnv('VITE_FEATURE_BETA_UI', 'false');
+  const apiBase = useLambaEnv<string>('VITE_API_BASE_URL', 'https://api.dev.com');
+  const isBetaEnabled = useLambaEnv<boolean>('VITE_FEATURE_BETA_UI', false);
 
   return (
     <div style={{ padding: '24px' }}>
       <h1>Dashboard</h1>
       <p>Connected Environment: <code>{apiBase}</code></p>
       
-      {showBetaFeature === 'true' && (
+      {isBetaEnabled && (
         <div className="beta-banner">
           🚀 Beta UI Enabled Live via lamba!
         </div>
@@ -147,14 +147,14 @@ Import `useLambaEnv` from `lamba/vue` as a reactive composition Vue Ref:
 <script setup lang="ts">
 import { useLambaEnv } from '@ojolowoblue/lamba/vue';
 
-const apiBase = useLambaEnv('VITE_API_BASE_URL', 'https://api.dev.com');
-const featureFlag = useLambaEnv('VITE_NEW_HEADER', 'false');
+const apiBase = useLambaEnv<string>('VITE_API_BASE_URL', 'https://api.dev.com');
+const isNewHeader = useLambaEnv<boolean>('VITE_NEW_HEADER', false);
 </script>
 
 <template>
   <div class="container">
     <h2>Current Backend: {{ apiBase }}</h2>
-    <header v-if="featureFlag === 'true'">
+    <header v-if="isNewHeader">
       <h3>✨ New Header Component</h3>
     </header>
   </div>
@@ -171,7 +171,7 @@ Initializes the lamba manager, hydrates saved overrides from `localStorage`, ena
 
 | Option | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `env` | `Record<string, string>` | `{}` | Initial default key-value pairs of environment variables. |
+| `env` | `Record<string, any>` | `{}` | Initial default key-value pairs of environment variables (supports strings, numbers, booleans, objects). |
 | `enabled` | `boolean` | `true` | Set to `false` to disable lamba (e.g. in production builds). |
 | `position` | `'bottom-right' \| 'bottom-left' \| 'top-right' \| 'top-left'` | `'bottom-right'` | Screen position for the floating widget launcher button. |
 | `secretKeysPattern` | `RegExp` | `/(KEY\|SECRET\|TOKEN\|PASSWORD\|AUTH\|PRIVATE)/i` | Regular expression to automatically obscure sensitive keys in the UI. |
@@ -183,11 +183,11 @@ Initializes the lamba manager, hydrates saved overrides from `localStorage`, ena
 
 ### Core Methods
 
-#### `lamba.get(key: string, fallback?: string): string`
-Returns the active value for the specified environment key (returns active override if present, otherwise default value or fallback).
+#### `lamba.get<T = any>(key: string, fallback?: T): T`
+Returns the active value for the specified environment key (returns active override if present, otherwise default value or fallback). Preserves numbers, booleans, and objects.
 
-#### `lamba.set(key: string, value: string): void`
-Programmatically overrides an environment variable live at runtime. The change is persisted in `localStorage` and triggers UI and listener updates.
+#### `lamba.set(key: string, value: any): void`
+Programmatically overrides an environment variable live at runtime with any data type. The change is persisted in `localStorage` and triggers UI and listener updates.
 
 #### `lamba.remove(key: string): void`
 Removes an override for a specific environment variable key, reverting it to its default value.
