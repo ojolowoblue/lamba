@@ -1,6 +1,6 @@
 {
   "name": "@ojolowoblue/lamba",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "A universal dev tool for viewing, overriding, and swapping environment variables live in web applications.",
   "repository": {
     "type": "git",
