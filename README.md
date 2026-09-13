@@ -1,5 +1,9 @@
 # lamba ⚡
 
+<p align="center">
+  <img src="logo.jpg" alt="lamba logo" width="180" />
+</p>
+
 **`lamba`** is a universal, lightweight developer tool and browser widget for viewing, overriding, and swapping environment variables live in web applications—supporting **all framework prefixes** (`VITE_`, `NEXT_PUBLIC_`, `REACT_APP_`, `VUE_APP_`, `PUBLIC_`, `EXPO_PUBLIC_`, `NUXT_`, `GATSBY_`, or unprefixed keys) across React, Vue, Next.js, Vite, Create React App, Astro, Nuxt, Svelte, or Vanilla HTML/JS—**without touching source code, restarting dev servers, or editing `.env` files.**
 
 Deployed via CDN or installed via NPM, `lamba` injects a non-intrusive floating UI powered by **Shadow DOM encapsulation**. Devs, QA engineers, and project managers can test multiple API environments, toggle feature flags, switch authentication tokens, and swap backend clusters on the fly directly in the browser.
