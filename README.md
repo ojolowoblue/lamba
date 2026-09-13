@@ -195,7 +195,26 @@ Programmatically overrides an environment variable live at runtime with any data
 Removes an override for a specific environment variable key, reverting it to its default value.
 
 #### `lamba.reset(): void`
-Clears all active environment overrides, reverting all keys back to their original default values.
+Clears all active in-memory environment variable overrides, reverting all keys back to their original default values. Storage is also cleared via the configured adapter.
+
+#### `lamba.purge(options?): void`
+Wipes **all lamba data from storage** (`__lamba_overrides__`, `__lamba_presets__`, `__lamba_active_preset__`). Safe to call even when lamba has not been initialized. Use this to clean up stale data left in `localStorage` from previous sessions when disabling lamba.
+
+```typescript
+// Option A: Explicitly purge stale storage, then don't init
+import lamba from '@ojolowoblue/lamba';
+lamba.purge();
+
+// Option B: Pass enabled:false — lamba auto-purges storage and mounts nothing
+lamba.init({ enabled: false });
+
+// Option C: Remove the import entirely (Vite/webpack tree-shake the full module)
+```
+
+> **Note**: If your `storageStrategy` was `'session'` or a custom adapter, pass the same options to `purge()` so it targets the correct backend:
+> ```typescript
+> lamba.purge({ storageStrategy: 'session' });
+> ```
 
 #### `lamba.onChange(listener: EnvChangeListener): () => void`
 Subscribes to live environment updates. Returns an `unsubscribe` function.
