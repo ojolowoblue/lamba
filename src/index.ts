@@ -4,6 +4,7 @@ import { NetworkInterceptor } from './core/network-interceptor';
 import { createShadowHost } from './ui/shadow-dom';
 import { LauncherUI } from './ui/launcher';
 import { ModalUI } from './ui/modal';
+import { createStorageAdapter } from './core/storage';
 
 export class LambaManager {
   private store: EnvStore | null = null;
@@ -107,7 +108,11 @@ export class LambaManager {
     };
 
 
-    if (this.options.enabled === false) return this;
+    if (this.options.enabled === false) {
+      // Purge any stale lamba data left in storage so nothing lingers
+      this.purge(options);
+      return this;
+    }
 
     // 1. Initialize Store
     this.store = new EnvStore(this.options);
@@ -184,6 +189,20 @@ export class LambaManager {
    */
   public reset(): void {
     this.store?.resetAllOverrides();
+  }
+
+  /**
+   * Removes ALL lamba data from storage (overrides, presets, active preset).
+   * Safe to call even when lamba has not been initialized.
+   * Useful when disabling lamba to ensure no stale data remains in the browser.
+   *
+   * @param options - Optionally pass storage options to target the correct adapter.
+   *                  Defaults to 'local' (localStorage) to cover the common case.
+   */
+  public purge(options?: Pick<LambaOptions, 'storageStrategy' | 'storage'>): void {
+    const adapter = this.store?.storage
+      ?? createStorageAdapter(options?.storageStrategy ?? 'local', options?.storage);
+    adapter.clear();
   }
 
   /**

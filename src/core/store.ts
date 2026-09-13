@@ -19,7 +19,7 @@ export class EnvStore {
   private allowedPrefixes?: string | string[] | RegExp | null;
   private envChangeListeners: Set<EnvChangeListener> = new Set();
   private storeChangeListeners: Set<StoreChangeListener> = new Set();
-  private storage: LambaStorageAdapter;
+  public storage: LambaStorageAdapter;
   public presetManager: PresetManager;
 
   constructor(options: LambaOptions = {}) {
