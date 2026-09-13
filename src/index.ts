@@ -233,6 +233,33 @@ export class LambaManager {
   public toggle(): void {
     this.modal?.toggle();
   }
+
+  /**
+   * Fully tears down lamba: removes the floating UI from the DOM, disables the
+   * network interceptor, and resets all internal state.
+   *
+   * Call this when you want to completely remove lamba at runtime, e.g. in
+   * framework cleanup hooks or HMR dispose handlers.
+   */
+  public destroy(): void {
+    // Remove the shadow host element from the DOM
+    if (typeof document !== 'undefined') {
+      const host = document.getElementById('lamba-root');
+      host?.parentNode?.removeChild(host);
+    }
+
+    // Disable network interceptor
+    this.networkInterceptor?.disable();
+    this.networkInterceptor = null;
+
+    // Nullify UI references
+    this.launcher = null;
+    this.modal = null;
+
+    // Reset store and state
+    this.store = null;
+    this.isInitialized = false;
+  }
 }
 
 // Global Singleton Instance
@@ -246,6 +273,23 @@ if (typeof window !== 'undefined') {
   if (currentScript && (currentScript.hasAttribute('data-lamba-auto') || currentScript.hasAttribute('data-auto-init'))) {
     lamba.init();
   }
+}
+
+// HMR cleanup: when this module is hot-replaced or removed (e.g. Vite, webpack),
+// tear down the floating UI so it doesn't linger in the DOM.
+// Use try/catch to avoid bundler warnings in CJS/IIFE builds where import.meta is unavailable.
+try {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore — import.meta.hot is a Vite/webpack-specific API
+  if (import.meta.hot) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    import.meta.hot.dispose(() => {
+      lamba.destroy();
+    });
+  }
+} catch (_) {
+  // Not an ESM/HMR environment — no-op
 }
 
 export default lamba;

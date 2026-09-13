@@ -212,7 +212,8 @@ lamba.purge();
 // Option B: Pass enabled:false — lamba auto-purges storage and mounts nothing
 lamba.init({ enabled: false });
 
-// Option C: Remove the import entirely (Vite/webpack tree-shake the full module)
+// Option C: Remove the import + call destroy() to immediately remove the floating UI at runtime
+lamba.destroy();
 ```
 
 > **Note**: If your `storageStrategy` was `'session'` or a custom adapter, pass the same options to `purge()` so it targets the correct backend:
@@ -234,6 +235,24 @@ Wraps an environment object in an ES Proxy that automatically intercepts propert
 
 #### `lamba.open()` / `lamba.close()` / `lamba.toggle()`
 Programmatically controls the visibility of the lamba modal panel.
+
+#### `lamba.destroy(): void`
+Fully tears down lamba at runtime: removes the `<lamba-widget>` shadow host from the DOM, disables the network interceptor, and resets all internal state. After calling `destroy()`, `init()` can be safely called again to re-mount.
+
+Useful for:
+- **React/Vue cleanup hooks** — call `lamba.destroy()` in a `useEffect` or `onUnmounted` teardown.
+- **Conditional disabling at runtime** — toggle lamba off without a page reload.
+- **HMR (automatic)** — in Vite/webpack dev environments, lamba automatically calls `destroy()` via `import.meta.hot.dispose` when the module is hot-replaced or removed, so the floating button disappears immediately when you delete the `lamba.init()` call.
+
+```typescript
+// Manual teardown example (e.g. in a React cleanup effect)
+import lamba from '@ojolowoblue/lamba';
+
+useEffect(() => {
+  lamba.init();
+  return () => lamba.destroy(); // Removes the floating button when component unmounts
+}, []);
+```
 
 ---
 
@@ -321,6 +340,15 @@ lamba.init({
 <details>
 <summary><b>Will lamba CSS affect my web application styles?</b></summary>
 <p>No. All <code>lamba</code> UI components and styles are rendered inside a modern <b>Shadow DOM host element</b> (<code>&lt;lamba-widget&gt;</code>), guaranteeing 100% style isolation.</p>
+</details>
+
+<details>
+<summary><b>I removed the <code>lamba.init()</code> call but the floating button is still visible — why?</b></summary>
+<p>The <code>&lt;lamba-widget&gt;</code> element is appended to <code>document.body</code> at init time and isn't automatically removed on module removal. To clean it up:</p>
+<ul>
+  <li><b>In a Vite/webpack dev project</b>: lamba registers a <code>import.meta.hot.dispose</code> hook that calls <code>lamba.destroy()</code> automatically on HMR — the button will disappear as soon as you save the file with the import removed.</li>
+  <li><b>If it still persists</b>: Call <code>lamba.destroy()</code> explicitly before removing the import, or do a hard page reload (<kbd>Cmd/Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>) to clear the DOM.</li>
+</ul>
 </details>
 
 ---
